@@ -33,6 +33,8 @@ app.layout = html.Div([
     dcc.Graph(id="leaderboard"),
     dcc.Interval(id="interval", interval=5*60*1000)  # refresh every 5 min
 ])
+server = app.server
+
 
 if __name__ == "__main__":
     app.run_server(host="0.0.0.0", port=8080)
