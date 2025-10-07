@@ -3,7 +3,7 @@ from bs4 import BeautifulSoup
 import pandas as pd
 from db import ensure_db_connection
 
-UID_FILE = "all_maps.txt"
+UID_FILE = "./resources/all_maps.txt"
 
 headers = {
     "User-Agent": (
