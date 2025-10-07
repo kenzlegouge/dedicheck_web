@@ -12,6 +12,7 @@ from datetime import datetime, timedelta
 from renders import render_html_table, render_score_table,top_border,time_ago
 from score import scoring_function
 from fetcher import start_background_thread, latest_df,last_updated
+from dotenv import load_dotenv
 
 # ---------------------------
 # CONFIG
@@ -43,7 +44,7 @@ st.markdown("""
 
 
 start_background_thread()
-
+load_dotenv()
 
 @st.cache_data(ttl=3600)
 def load_data(path):

@@ -4,7 +4,7 @@ Created on Tue Oct  7 18:58:54 2025
 
 @author: Hola
 """
-
+import os
 import threading
 import time
 import pandas as pd
@@ -12,7 +12,10 @@ from datetime import datetime
 from dedi import fetch_dedi  
 import psycopg2
 from datetime import date
-
+from dotenv import load_dotenv
+from score import assign_points
+from psycopg2.extras import execute_values
+    
 
 latest_df = None
 last_updated = None
@@ -30,10 +33,14 @@ def background_fetch_loop(interval=3600):
             print(f"✅ Data refreshed — {len(df)} records @ {last_updated}")
         except Exception as e:
             print(f"⚠️ Error during fetch: {e}")
+        
+        if datetime.utcnow().hour == 0:
+            print("Storing all data")
+            store_daily_scores(df)
+        
         time.sleep(interval)  # wait for next refresh
         
-    # if datetime.utcnow().hour == 0:
-    #     store_daily_scores(latest_scores_df)
+
 
 # Launch the background thread (only once)
 def start_background_thread():
@@ -42,31 +49,76 @@ def start_background_thread():
         t.start()
         print("🚀 Background fetch thread started.")
 
-def store_daily_scores(df_scores):
+def store_daily_scores(df):
     """
-    Store the daily score snapshot of players into the DB.
-    df_scores must contain: Login, NickName, Team, Score
+    Efficiently store daily player scores into the DB.
+    df must contain: Login, NickName, Rank, optional Team.
     """
-    conn = psycopg2.connect(
-        host="your-neon-host",
-        dbname="your_db",
-        user="your_user",
-        password="your_password",
-        sslmode="require"
-    )
+    print("⚙️ Starting fast bulk upload...")
+
+    load_dotenv()
+    db_url = os.getenv("DATABASE_URL")
+    if not db_url:
+        raise ValueError("DATABASE_URL not found!")
+
+    conn = psycopg2.connect(db_url)
     cur = conn.cursor()
+
+    # Compute score
+    df["Score"] = df["Rank"].apply(assign_points)
+    
+    df = (
+    df.sort_values("RecordDate")
+      .groupby("Login", as_index=False)
+      .agg({
+          "NickName": "last",
+          "Score": "sum"  # or 'sum', depending on your scoring model
+      })
+)
 
     today = date.today()
 
-    for row in df_scores.itertuples(index=False):
-        cur.execute("""
-            INSERT INTO player_daily_scores (login, nickname, team, score, recorded_at)
-            VALUES (%s, %s, %s, %s, %s)
-            ON CONFLICT (login, recorded_at)
-            DO UPDATE SET score = EXCLUDED.score, nickname = EXCLUDED.nickname, team = EXCLUDED.team;
-        """, (row.Login, row.NickName, getattr(row, "Team", None), float(row.Score), today))
+    # Ensure table exists
+    cur.execute("""
+        CREATE TABLE IF NOT EXISTS player_daily_scores (
+            id SERIAL PRIMARY KEY,
+            login TEXT NOT NULL,
+            nickname TEXT,
+            score FLOAT NOT NULL,
+            recorded_at DATE NOT NULL DEFAULT CURRENT_DATE,
+            UNIQUE (login, recorded_at)
+        );
+    """)
+    conn.commit()
 
+    # Build list of tuples
+    records = [
+        (
+            str(row.Login),
+            str(row.NickName),
+            float(row.Score),
+            today,
+        )
+        for row in df.itertuples(index=False)
+    ]
+    
+    
+
+    print(f"🚀 Inserting {len(records)} records in bulk...")
+
+    # Faster ON CONFLICT bulk upsert
+    query = """
+        INSERT INTO player_daily_scores (login, nickname, score, recorded_at)
+        VALUES %s
+        ON CONFLICT (login, recorded_at)
+        DO UPDATE SET
+            score = EXCLUDED.score,
+            nickname = EXCLUDED.nickname;
+    """
+
+    execute_values(cur, query, records, page_size=500)
     conn.commit()
     cur.close()
     conn.close()
-    print(f"✅ Stored {len(df_scores)} player scores for {today}")
+
+    print(f"✅ Bulk insert complete — {len(records)} rows uploaded for {today}")
