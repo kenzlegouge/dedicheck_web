@@ -42,7 +42,7 @@ st.markdown("""
 # ---------------------------
 
 
-start_background_thread()
+# start_background_thread()
 
 
 

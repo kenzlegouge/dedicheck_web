@@ -418,3 +418,118 @@ def time_ago(dt):
     else:
         days = int(s // 86400)
         return f"{days} day{'s' if days > 1 else ''} ago"
+
+
+
+def render_teams_table(df):
+    """Return a compact, styled HTML leaderboard with colored teams and progress bars."""
+    style = """
+    <style>
+    .score-container {
+        font-family: 'Segoe UI', Roboto, sans-serif;
+        color: #e6edf3;
+        display: flex;
+        justify-content: center;
+        margin-top: 1em;
+    }
+    .score-table {
+        width: 100%;
+        max-width: 500px;  /* limit width */
+        border-collapse: collapse;
+        background: linear-gradient(145deg, #1a1d25, #11141a);
+        border-radius: 14px;
+        overflow: hidden;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+    }
+    .score-table th, .score-table td {
+        padding: 0.7em 1em;
+        border-bottom: 1px solid #2d313a;
+        font-size: 0.9em;
+    }
+    .score-table th {
+        color: #8b949e;
+        text-transform: uppercase;
+        font-weight: 700;
+        font-size: 0.8em;
+        letter-spacing: 0.4px;
+    }
+    .score-table .team-name {
+        font-weight: 600;
+        width: 60%;
+        white-space: nowrap;
+    }
+    .score-table .score-bar {
+        position: relative;
+        background-color: #222831;
+        border-radius: 6px;
+        height: 18px;
+        overflow: hidden;
+    }
+    .score-table .score-fill {
+        position: absolute;
+        top: 0; left: 0;
+        height: 100%;
+        border-radius: 6px;
+        transition: width 0.6s ease;
+    }
+    .score-table .score-value {
+        position: relative;
+        z-index: 2;
+        text-align: right;
+        font-size: 0.85em;
+        font-weight: 500;
+        padding-right: 0.4em;
+    }
+    .score-table .top-1 { background: rgba(255,215,0,0.05); }
+    .score-table .top-2 { background: rgba(192,192,192,0.05); }
+    .score-table .top-3 { background: rgba(205,127,50,0.05); }
+    .score-table tr:hover {
+        background-color: rgba(88,166,255,0.08);
+        transition: background 0.2s ease;
+    }
+    </style>
+    """
+
+    # Prepare score normalization for bars
+    max_score = df["Score"].max() if len(df) else 1
+
+    html = "<div class='score-container'><table class='score-table'><thead><tr><th>Team</th><th style='text-align:right;'>Score</th></tr></thead><tbody>"
+
+    for i, row in enumerate(df.itertuples(index=False)):
+        team = str(row.team)
+        score = float(row.Score)
+        ratio = max(0, min(score / max_score, 1))  # clamp 0–1
+
+        # podium highlight
+        if i == 0:
+            row_class = "top-1"
+        elif i == 1:
+            row_class = "top-2"
+        elif i == 2:
+            row_class = "top-3"
+        else:
+            row_class = ""
+
+        # team color
+        color = "#58a6ff"
+        for key, hex_color in TEAM_COLORS.items():
+            if key.lower() in team.lower():
+                color = hex_color
+                break
+
+        html += f"""
+        <tr class="{row_class}">
+            <td class="team-name" style="color:{color};">{team}</td>
+            <td>
+                <div class="score-bar">
+                    <div class="score-fill" style="width:{ratio*100:.1f}%; background:{color}; opacity:0.4;"></div>
+                    <div class="score-value">{score:.0f}</div>
+                </div>
+            </td>
+        </tr>
+        """
+
+    html += "</tbody></table></div>"
+    return style + html
+
+    
