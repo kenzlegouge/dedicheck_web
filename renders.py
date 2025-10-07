@@ -9,6 +9,7 @@ import streamlit as st
 import pandas as pd
 import streamlit.components.v1 as components
 from datetime import datetime, timedelta, timezone
+from fetcher import last_updated   # <— import from your background fetcher
 
 # Load teams safely
 TEAMS_PATH = "./resources/teams.csv"
@@ -294,13 +295,39 @@ def render_score_table(title: str, df, columns: list[str]):
 
     return html
 
+def _time_ago(dt):
+    if not dt:
+        return "Fetching..."
+    now = datetime.now(timezone.utc)
+    if dt.tzinfo is None:
+        dt = dt.replace(tzinfo=timezone.utc)
+    diff = now - dt
+    s = diff.total_seconds()
+    if s < 60:
+        return f"{int(s)}s ago"
+    elif s < 3600:
+        return f"{int(s // 60)} min ago"
+    elif s < 86400:
+        return f"{int(s // 3600)} h ago"
+    else:
+        d = int(s // 86400)
+        return f"{d} day{'s' if d > 1 else ''} ago"
+
 def top_border(df):
     # --- Compute metrics ---
     total_maps = df["MapUID"].nunique()
     unique_players = df["Login"].nunique()
     total_records = len(df)
-    last_updated = pd.to_datetime(df["RecordDate"], errors="coerce").max().strftime("%Y-%m-%d %H:%M")
-    
+
+    # Prefer the global last_updated (from fetcher)
+    if last_updated:
+        last_updated_str = _time_ago(last_updated)
+        pulse_class = "pulse"  # animate if recent
+    else:
+        last_in_df = pd.to_datetime(df["RecordDate"], errors="coerce").max()
+        last_updated_str = last_in_df.strftime("%Y-%m-%d %H:%M") if pd.notna(last_in_df) else "N/A"
+        pulse_class = ""
+
     # --- CSS Styling ---
     st.markdown("""
     <style>
@@ -338,20 +365,22 @@ def top_border(df):
         letter-spacing: 0.6px;
         text-transform: uppercase;
     }
+    .pulse {
+        animation: pulseGlow 2.5s infinite;
+    }
+    @keyframes pulseGlow {
+        0%   { box-shadow: 0 0 10px rgba(63,185,80,0.4); }
+        50%  { box-shadow: 0 0 25px rgba(63,185,80,0.8); }
+        100% { box-shadow: 0 0 10px rgba(63,185,80,0.4); }
+    }
     @media (max-width: 800px) {
-        .stat-container {
-            flex-direction: column;
-            align-items: center;
-        }
-        .stat-box {
-            width: 100%;
-            max-width: 400px;
-        }
+        .stat-container { flex-direction: column; align-items: center; }
+        .stat-box { width: 100%; max-width: 400px; }
     }
     </style>
     """, unsafe_allow_html=True)
-    
-    # --- Display top info boxes ---
+
+    # --- Render top bar ---
     st.markdown(f"""
     <div class="stat-container">
         <div class="stat-box">
@@ -366,8 +395,8 @@ def top_border(df):
             <div class="stat-value">🏁 {total_records:,}</div>
             <div class="stat-label">Records Tracked</div>
         </div>
-        <div class="stat-box">
-            <div class="stat-value">🕒 {last_updated}</div>
+        <div class="stat-box {pulse_class}">
+            <div class="stat-value">🕒 {last_updated_str}</div>
             <div class="stat-label">Last Updated</div>
         </div>
     </div>
