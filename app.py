@@ -46,7 +46,7 @@ start_background_thread()
 
 
 
-@st.cache_data
+@st.cache_data(ttl=3600)
 def load_data(path):
     # If available, use latest data; otherwise load cached CSV
     if latest_df is not None:
