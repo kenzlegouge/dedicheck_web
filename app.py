@@ -11,6 +11,7 @@ import streamlit.components.v1 as components
 from datetime import datetime, timedelta
 from renders import render_html_table, render_score_table,top_border, time_ago
 from score import scoring_function
+from fetcher import start_background_thread, latest_df, last_updated
 
 # ---------------------------
 # CONFIG
@@ -39,9 +40,20 @@ st.markdown("""
 # ---------------------------
 # LOAD DATA
 # ---------------------------
+
+
+start_background_thread()
+
+
+
 @st.cache_data
 def load_data(path):
-    df = pd.read_csv(path, dtype=str)
+    # If available, use latest data; otherwise load cached CSV
+    if latest_df is not None:
+        df = latest_df.copy()
+    else:
+        df = pd.read_csv("./resources/dedimania_all_records.csv")
+    
     df["Record"] = pd.to_numeric(df["Record"], errors="coerce")
     # Try to parse date
     df["RecordDate"] = pd.to_datetime(df["RecordDate"], errors="coerce", dayfirst=True)
