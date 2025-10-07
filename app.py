@@ -9,9 +9,9 @@ import streamlit as st
 import pandas as pd
 import streamlit.components.v1 as components
 from datetime import datetime, timedelta
-from renders import render_html_table, render_score_table,top_border, time_ago
+from renders import render_html_table, render_score_table,top_border,time_ago
 from score import scoring_function
-from fetcher import start_background_thread, latest_df, last_updated
+from fetcher import start_background_thread, latest_df,last_updated
 
 # ---------------------------
 # CONFIG
