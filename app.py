@@ -42,8 +42,7 @@ st.markdown("""
 # ---------------------------
 
 
-# start_background_thread()
-
+start_background_thread()
 
 
 @st.cache_data(ttl=3600)
