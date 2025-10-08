@@ -8,18 +8,22 @@ import os
 import threading
 import time
 import sys
+from dotenv import load_dotenv
+load_dotenv()  # must come first
 import pandas as pd
 from datetime import datetime
 from dedi import fetch_dedi  
 import psycopg2
 from datetime import date
-from dotenv import load_dotenv
+
+
 from score import assign_points
 from psycopg2.extras import execute_values
     
 
 latest_df = None
 last_updated = None
+
 
 def background_fetch_loop(interval=3600):
     """Run fetch_dedi() every `interval` seconds (default = 1h)."""
