@@ -16,7 +16,7 @@ headers = {
 def fetch_dedi():
     with open(UID_FILE, "r", encoding="utf-8") as f:
         uids = [u.strip() for u in f if u.strip()]
-        uids = uids[0:100]
+        uids = uids[0:10]
 
     all_records = []
     print(f"Found {len(uids)} UIDs in {UID_FILE}")

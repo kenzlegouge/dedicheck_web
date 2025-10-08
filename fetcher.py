@@ -27,8 +27,11 @@ def background_fetch_loop(interval=3600):
         print("⏳ Running scheduled Dedimania fetch...")
         try:
             df = fetch_dedi()
+            print("Fetched")
             latest_df = df
+            print("last updated")
             last_updated = datetime.utcnow()
+            print("save to local")
             df.to_csv("./resources/dedimania_all_records.csv", index=False, encoding="utf-8")
             print(f"✅ Data refreshed — {len(df)} records @ {last_updated}")
             print("⚠️ Storing to remote Neon db")
