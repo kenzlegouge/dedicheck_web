@@ -65,15 +65,18 @@ def fetch_dedi():
             print(f"✅ Parsed {len(records)} records for {uid}")
 
     # Combine everything into a DataFrame
+    print("✅ Loop finished, now converting to DataFrame…")
     df = pd.DataFrame(all_records)
+    print(f"✅ Created DataFrame with {len(df)} rows")
     
+    print("🧮 Parsing numeric/time fields…")
     df["Record"] = df["Record"].apply(parse_record_time)
     df["Rank"] = pd.to_numeric(df["Rank"], errors="coerce")
     df["Max"] = pd.to_numeric(df["Max"], errors="coerce")
     df["CPs"] = pd.to_numeric(df["CPs"], errors="coerce")
     df["RecordDate"] = pd.to_datetime(df["RecordDate"], errors="coerce")
-
-
+    
+    print("💾 Returning DataFrame…")
     return df
 
 def cutlines(lines):
