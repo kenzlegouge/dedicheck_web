@@ -29,25 +29,16 @@ def background_fetch_loop(interval=3600):
         print("⏳ Running scheduled Dedimania fetch...")
         try:
             df = fetch_dedi()
-            print("Fetched")
-            sys.stdout.flush()
-            time.sleep(2)
+
             latest_df = df
-            print("last updated")
-            sys.stdout.flush()
-            time.sleep(2)
+
             last_updated = datetime.utcnow()
-            print("save to local")
-            sys.stdout.flush()
-            time.sleep(2)
+
             df.to_csv("./resources/dedimania_all_records.csv", index=False, encoding="utf-8")
             print(f"✅ Data refreshed — {len(df)} records @ {last_updated}")
             print("⚠️ Storing to remote Neon db")
-            sys.stdout.flush()
-            time.sleep(2)
             store_daily_scores(df)
-            sys.stdout.flush()
-            time.sleep(2)
+
         except Exception as e:
             print(f"⚠️ Error during fetch: {e}")
         
@@ -80,9 +71,6 @@ def store_daily_scores(df):
 
     conn = psycopg2.connect(db_url)
     cur = conn.cursor()
-
-    sys.stdout.flush()
-    time.sleep(2)
     # Compute score
     df["Score"] = df["Rank"].apply(assign_points)
     
@@ -125,8 +113,6 @@ def store_daily_scores(df):
 
     print(f"🚀 Inserting {len(records)} records in bulk...")
 
-    sys.stdout.flush()
-    time.sleep(2)
     # Faster ON CONFLICT bulk upsert
     query = """
         INSERT INTO player_daily_scores (login, nickname, score, recorded_at)
@@ -143,6 +129,3 @@ def store_daily_scores(df):
     conn.close()
 
     print(f"✅ Bulk insert complete — {len(records)} rows uploaded for {today}")
-    
-    sys.stdout.flush()
-    time.sleep(2)
