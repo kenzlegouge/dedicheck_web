@@ -2,6 +2,8 @@ import requests
 from bs4 import BeautifulSoup
 import pandas as pd
 from db import ensure_db_connection
+import sys
+import time
 
 UID_FILE = "./resources/all_maps.txt"
 
@@ -16,7 +18,7 @@ headers = {
 def fetch_dedi():
     with open(UID_FILE, "r", encoding="utf-8") as f:
         uids = [u.strip() for u in f if u.strip()]
-        uids = uids
+        uids = uids[1:20]
 
     all_records = []
     print(f"Found {len(uids)} UIDs in {UID_FILE}")
@@ -63,11 +65,16 @@ def fetch_dedi():
         else:
             all_records.extend(records)
             print(f"✅ Parsed {len(records)} records for {uid}")
-
+        
+    sys.stdout.flush()
+    time.sleep(2)
     # Combine everything into a DataFrame
     print("✅ Loop finished, now converting to DataFrame…")
     df = pd.DataFrame(all_records)
     print(f"✅ Created DataFrame with {len(df)} rows")
+    
+    sys.stdout.flush()
+    time.sleep(2)
     
     print("🧮 Parsing numeric/time fields…")
     df["Record"] = df["Record"].apply(parse_record_time)
@@ -76,6 +83,8 @@ def fetch_dedi():
     df["CPs"] = pd.to_numeric(df["CPs"], errors="coerce")
     df["RecordDate"] = pd.to_datetime(df["RecordDate"], errors="coerce")
     
+    sys.stdout.flush()
+    time.sleep(2)
     print("💾 Returning DataFrame…")
     return df
 
