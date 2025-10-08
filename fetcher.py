@@ -23,6 +23,7 @@ last_updated = None
 def background_fetch_loop(interval=3600):
     """Run fetch_dedi() every `interval` seconds (default = 1h)."""
     global latest_df, last_updated
+    print("test")
     while True:
         print("⏳ Running scheduled Dedimania fetch...")
         try:
