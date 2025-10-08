@@ -86,6 +86,9 @@ def fetch_dedi():
     sys.stdout.flush()
     time.sleep(2)
     print("💾 Returning DataFrame…")
+    
+    sys.stdout.flush()
+    time.sleep(2)
     return df
 
 def cutlines(lines):
