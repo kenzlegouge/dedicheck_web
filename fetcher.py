@@ -40,14 +40,13 @@ def background_fetch_loop(interval=3600):
 
             df.to_csv("./resources/dedimania_all_records.csv", index=False, encoding="utf-8")
             print(f"✅ Data refreshed — {len(df)} records @ {last_updated}")
-            print("⚠️ Storing to remote Neon db")
             sys.stdout.flush()
 
         except Exception as e:
             print(f"⚠️ Error during fetch: {e}")
         
         if datetime.utcnow().hour == 0:
-            print("Storing all data")
+            print("⚠️ Storing to remote Neon db")
             store_daily_scores(df)
             sys.stdout.flush() # Ensure printing
         

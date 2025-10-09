@@ -16,12 +16,7 @@ st.set_page_config(page_title="Team Rankings", layout="wide")
 st.title("👥 Team Rankings")
 
 
-# Load player and team data
-uploaded = True
-
-
-if uploaded:
-    df = load_data("./resources/dedimania_all_records.csv")
+df = load_data("./resources/dedimania_all_records.csv")
 
 teams_df = pd.read_csv("./resources/teams.csv", sep = "\t", engine="python")
 teams_df.columns = teams_df.columns.str.strip().str.lower()
