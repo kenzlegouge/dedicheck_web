@@ -83,6 +83,8 @@ heatmap = alt.Chart(plot_df).mark_rect(
             title='Unit Digit',
             axis=alt.Axis(labelColor='white', titleColor='white'),
             scale=alt.Scale(padding=0, align=0.5)),
+            orient='top',                 # 👈 this moves it to the top
+
     y=alt.Y('Decade:O',
             title='Decade',
             axis=alt.Axis(labelColor='white', titleColor='white'),
