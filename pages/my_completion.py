@@ -80,12 +80,12 @@ heatmap = alt.Chart(plot_df).mark_rect(
 ).encode(
     x=alt.X('Challenge_Unit:O',
         sort=['1', '2', '3', '4', '5', '6', '7', '8', '9', '0'],
-            title='Unit Digit',
+            title='dodo',
             axis=alt.Axis(labelColor='white', titleColor='white',orient = "top"),
             scale=alt.Scale(padding=0, align=0.5)),
 
     y=alt.Y('Decade:O',
-            title='Decade',
+            title='dodo',
             axis=alt.Axis(labelColor='white', titleColor='white'),
             scale=alt.Scale(padding=0, align=0.5)),
     color=alt.Color('Rank_Category:N',
