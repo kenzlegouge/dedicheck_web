@@ -12,7 +12,7 @@ from score import assign_team_from_nickname, assign_points
 import streamlit.components.v1 as components
 import altair as alt
 
-st.set_page_config(page_title="My achievments", layout="wide")
+st.set_page_config(page_title="My achievements", layout="wide")
 st.title("Dodo challenge completion")
 
 
