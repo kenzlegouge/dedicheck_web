@@ -72,6 +72,7 @@ width = tile_size * 14                      # 10 challenge units
 height = tile_size * len(decades)          # dynamic based on # of decades
 plot_df['Challenge_Unit'] = plot_df['Challenge_Unit'].astype(str)
 
+print(plot_df)
 heatmap = alt.Chart(plot_df).mark_rect(
     cornerRadius=8,
     stroke= '#1e1e1e',
