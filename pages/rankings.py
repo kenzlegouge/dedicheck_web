@@ -109,8 +109,6 @@ st.altair_chart(chart1, use_container_width=True)
 # Compute daily difference per player
 # 1️⃣ Ensure recorded_at is datetime
 df_filtered["recorded_at"] = pd.to_datetime(df_filtered["recorded_at"], errors="coerce")
-print(f"df", {df_filtered.shape[0]})
-print(df_filtered)
 # 3️⃣ Compute day-by-day difference per player
 df_diff = (
     df_filtered
@@ -120,7 +118,6 @@ df_diff = (
     .dropna(subset=["diff"])
 )
 
-print(df_diff.shape[0])
 
 # 4️⃣ Clean up
 df_diff["recorded_at"] = pd.to_datetime(df_diff["recorded_at"])
